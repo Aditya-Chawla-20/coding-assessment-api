@@ -112,6 +112,7 @@ class BatchProcessor {
       return {
         batch_id: batch.batch_id,
         ids: batch.ids,
+        ingestion_id: ingestionId,
         status: batch.status
       };
     });
