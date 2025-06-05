@@ -16,6 +16,9 @@ class BatchProcessor {
     this.MAX_BATCH_SIZE = 3;
     this.processingTimeout = null;
 
+    // Batch ID counter for integer IDs (as per Loop spec)
+    this.batchIdCounter = 0;
+
     // Priority levels for sorting
     this.PRIORITY_LEVELS = {
       'HIGH': 3,
@@ -43,8 +46,8 @@ class BatchProcessor {
     const batches = [];
     for (let i = 0; i < ids.length; i += this.MAX_BATCH_SIZE) {
       const batchIds = ids.slice(i, i + this.MAX_BATCH_SIZE);
-      const batchId = uuidv4();
-      
+      const batchId = ++this.batchIdCounter; // Use integer ID as per Loop spec
+
       const batch = {
         batch_id: batchId,
         ingestion_id: ingestionId,
@@ -56,10 +59,10 @@ class BatchProcessor {
         completed_at: null,
         results: []
       };
-      
+
       batches.push(batch);
       this.batches.set(batchId, batch);
-      
+
       // Add to priority queue
       this.addBatchToQueue(batch);
     }
@@ -106,13 +109,12 @@ class BatchProcessor {
       return null;
     }
     
-    // Get all batches for this ingestion
+    // Get all batches for this ingestion (Loop format: no ingestion_id in batches)
     const batches = ingestion.batch_ids.map(batchId => {
       const batch = this.batches.get(batchId);
       return {
         batch_id: batch.batch_id,
         ids: batch.ids,
-        ingestion_id: ingestionId,
         status: batch.status
       };
     });
