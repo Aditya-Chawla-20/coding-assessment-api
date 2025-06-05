@@ -1,5 +1,5 @@
 const errorHandler = (err, req, res, next) => {
-  console.error('Error occurred:', err);
+  console.error('❌ Error occurred:', err);
 
   // Default error
   let error = {
@@ -7,13 +7,13 @@ const errorHandler = (err, req, res, next) => {
     status: err.status || 500
   };
 
-  // Mongoose validation error
+  // Validation errors
   if (err.name === 'ValidationError') {
     error.message = Object.values(err.errors).map(val => val.message).join(', ');
     error.status = 400;
   }
 
-  // Mongoose duplicate key error
+  // Duplicate key error
   if (err.code === 11000) {
     error.message = 'Duplicate field value entered';
     error.status = 400;
@@ -33,14 +33,36 @@ const errorHandler = (err, req, res, next) => {
 
   // Syntax error in JSON
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    error.message = 'Invalid JSON format';
+    error.message = 'Invalid JSON format in request body';
     error.status = 400;
   }
 
-  res.status(error.status).json({
+  // Custom application errors
+  if (err.name === 'IngestionError') {
+    error.status = 400;
+  }
+
+  if (err.name === 'RateLimitError') {
+    error.status = 429;
+  }
+
+  // Type errors (usually from invalid input)
+  if (err instanceof TypeError) {
+    error.message = 'Invalid input type';
+    error.status = 400;
+  }
+
+  const response = {
     error: error.message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
+    timestamp: new Date().toISOString()
+  };
+
+  // Add stack trace in development
+  if (process.env.NODE_ENV === 'development') {
+    response.stack = err.stack;
+  }
+
+  res.status(error.status).json(response);
 };
 
 module.exports = errorHandler;

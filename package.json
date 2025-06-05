@@ -1,16 +1,23 @@
 {
-  "name": "coding-assessment-api",
+  "name": "data-ingestion-api",
   "version": "1.0.0",
-  "description": "REST API service for coding assessment with ingest endpoint",
+  "description": "Data Ingestion API System with priority-based batch processing and rate limiting",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "test": "jest",
+    "test": "jest --testTimeout=20000",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
-  "keywords": ["api", "rest", "ingest", "coding-assessment"],
+  "keywords": [
+    "api",
+    "rest",
+    "data-ingestion",
+    "batch-processing",
+    "rate-limiting",
+    "priority-queue"
+  ],
   "author": "",
   "license": "ISC",
   "engines": {
@@ -27,11 +34,23 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "helmet": "^8.1.0"
+    "helmet": "^8.1.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.1.10",
     "supertest": "^7.1.1"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Aditya-Chawla-20/coding-assessment-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Aditya-Chawla-20/coding-assessment-api/issues"
+  },
+  "homepage": "https://github.com/Aditya-Chawla-20/coding-assessment-api#readme"
 }

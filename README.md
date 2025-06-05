@@ -1,247 +1,304 @@
-# Coding Assessment API Service
+# Data Ingestion API System
 
-A REST API service built for coding assessment with data ingestion capabilities.
+A sophisticated REST API system for data ingestion with priority-based batch processing, rate limiting, and asynchronous job processing.
 
-## Features
+## 🚀 Features
 
-- **POST /ingest** - Main endpoint for data ingestion
-- **GET /data** - Retrieve ingested data with pagination
-- **GET /data/stats** - Get statistics about ingested data
-- **GET /** - Health check endpoint
+- **Priority-based job queue** with HIGH, MEDIUM, LOW priorities
+- **Rate limiting**: Maximum 3 IDs processed per 5-second interval
+- **Asynchronous batch processing** with real-time status tracking
+- **Intelligent scheduling** based on priority and creation time
+- **Comprehensive validation** and error handling
+- **Extensive test coverage** with timing verification
 
-## Quick Start
+## 📋 API Endpoints
 
-### Local Development
+### 1. Data Ingestion
+**POST /ingest**
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd coding-assessment-api
-   ```
+Submit a data ingestion request with a list of IDs and priority level.
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Start the production server**
-   ```bash
-   npm start
-   ```
-
-The server will start on port 3000 (or the port specified in the PORT environment variable).
-
-### Testing
-
-Run the test suite:
-```bash
-npm test
-```
-
-Run tests with coverage:
-```bash
-npm run test:coverage
-```
-
-Run tests in watch mode:
-```bash
-npm run test:watch
-```
-
-## API Endpoints
-
-### Health Check
-- **GET /** - Returns service status and available endpoints
-
-### Data Ingestion
-- **POST /ingest**
-  - Accepts JSON payload in request body
-  - Returns success confirmation with metadata
-  - Validates payload format and content
-
-Example request:
-```bash
-curl -X POST https://your-service.herokuapp.com/ingest \
-  -H "Content-Type: application/json" \
-  -d '{"name": "John Doe", "email": "john@example.com", "age": 30}'
-```
-
-Example response:
+**Request Format:**
 ```json
 {
-  "success": true,
-  "message": "Data ingested successfully",
-  "id": 1,
-  "timestamp": "2023-12-07T10:30:00.000Z",
-  "dataSize": 58,
-  "totalRecords": 1
+  "ids": [1, 2, 3, 4, 5],
+  "priority": "HIGH"
 }
 ```
 
-### Data Retrieval
-- **GET /data**
-  - Returns paginated list of ingested data
-  - Query parameters:
-    - `limit` (default: 10, max: 100) - Number of records per page
-    - `offset` (default: 0) - Number of records to skip
-    - `id` - Retrieve specific record by ID
+**Parameters:**
+- `ids` (required): Array of integers (1 to 10^9+7)
+- `priority` (optional): "HIGH", "MEDIUM", or "LOW" (defaults to "MEDIUM")
 
-Example request:
-```bash
-curl https://your-service.herokuapp.com/data?limit=5&offset=0
-```
-
-Example response:
+**Response:**
 ```json
 {
-  "data": [
+  "ingestion_id": "abc123-def456-ghi789"
+}
+```
+
+### 2. Status Checking
+**GET /status/{ingestion_id}**
+
+Check the processing status of an ingestion request.
+
+**Response:**
+```json
+{
+  "ingestion_id": "abc123-def456-ghi789",
+  "status": "triggered",
+  "batches": [
     {
-      "id": 1,
-      "timestamp": "2023-12-07T10:30:00.000Z",
-      "originalPayload": {"name": "John Doe", "email": "john@example.com"},
-      "processed": true,
-      "size": 58
+      "batch_id": "batch-uuid-1",
+      "ids": [1, 2, 3],
+      "status": "completed"
+    },
+    {
+      "batch_id": "batch-uuid-2",
+      "ids": [4, 5],
+      "status": "triggered"
     }
-  ],
-  "pagination": {
-    "total": 1,
-    "limit": 5,
-    "offset": 0,
-    "hasMore": false
+  ]
+}
+```
+
+**Status Values:**
+- **Batch Level**: `yet_to_start`, `triggered`, `completed`
+- **Overall Status**:
+  - `yet_to_start`: All batches are yet to start
+  - `triggered`: At least one batch is triggered
+  - `completed`: All batches are completed
+
+### 3. System Health
+**GET /**
+
+Returns system health and configuration information.
+
+**Response:**
+```json
+{
+  "message": "Data Ingestion API System",
+  "status": "healthy",
+  "timestamp": "2025-06-04T13:07:12.615Z",
+  "endpoints": {
+    "ingest": "POST /ingest",
+    "status": "GET /status/<ingestion_id>",
+    "health": "GET /"
   },
-  "meta": {
-    "totalRecords": 1,
-    "oldestRecord": "2023-12-07T10:30:00.000Z",
-    "newestRecord": "2023-12-07T10:30:00.000Z"
+  "system_info": {
+    "queue_size": 5,
+    "active_batches": 2,
+    "rate_limit": "3 IDs per 5 seconds"
   }
 }
 ```
 
-### Statistics
-- **GET /data/stats**
-  - Returns statistics about ingested data
+## 🔧 Quick Start
 
-Example response:
-```json
-{
-  "totalRecords": 100,
-  "totalSize": 5800,
-  "averageSize": 58,
-  "oldestRecord": "2023-12-07T10:00:00.000Z",
-  "newestRecord": "2023-12-07T10:30:00.000Z"
-}
+### Local Development
+
+1. **Clone and install**
+   ```bash
+   git clone https://github.com/Aditya-Chawla-20/data-ingestion-api.git
+   cd data-ingestion-api
+   npm install
+   ```
+
+2. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+3. **Start production server**
+   ```bash
+   npm start
+   ```
+
+The server runs on port 3000 by default.
+
+### Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests in watch mode
+npm run test:watch
 ```
 
-## Error Handling
+## 🏗️ System Architecture
 
-The API returns appropriate HTTP status codes:
+### Core Components
 
-- **200** - Success
-- **201** - Created (successful ingestion)
-- **400** - Bad Request (invalid payload)
-- **404** - Not Found (endpoint or record not found)
-- **500** - Internal Server Error
+1. **BatchProcessor Service**
+   - Priority queue management
+   - Rate limiting enforcement
+   - Asynchronous batch processing
+   - Status tracking
 
-Error responses include descriptive messages:
-```json
-{
-  "error": "Invalid payload",
-  "message": "Request body must be a valid JSON object"
-}
+2. **Ingestion Routes**
+   - Input validation
+   - Request handling
+   - Error management
+
+3. **Status Routes**
+   - Real-time status retrieval
+   - System monitoring
+
+### Processing Logic
+
+1. **Batch Creation**: IDs are split into batches of maximum 3 IDs each
+2. **Priority Queuing**: Batches are queued by priority (HIGH > MEDIUM > LOW) then by creation time
+3. **Rate Limited Processing**: Only one batch processes every 5 seconds
+4. **Status Updates**: Real-time status tracking throughout the process
+
+### Example Processing Timeline
+
+```
+Request 1 - T0 - {"ids": [1,2,3,4,5], "priority": "MEDIUM"}
+Request 2 - T4 - {"ids": [6,7,8,9], "priority": "HIGH"}
+
+T0-T5:   Process [1,2,3] (MEDIUM, first batch)
+T5-T10:  Process [6,7,8] (HIGH, higher priority)
+T10-T15: Process [9,4,5] (remaining HIGH, then MEDIUM)
 ```
 
-## Deployment
+## 🧪 Testing Strategy
 
-### Heroku Deployment
+The test suite includes:
 
-1. **Install Heroku CLI**
-   ```bash
-   # macOS
-   brew tap heroku/brew && brew install heroku
-   
-   # Or download from https://devcenter.heroku.com/articles/heroku-cli
-   ```
+- **Input Validation Tests**: All edge cases and error conditions
+- **Rate Limiting Verification**: Timing-based tests ensuring 5-second intervals
+- **Priority Handling Tests**: Verification of correct priority ordering
+- **Status Transition Tests**: Real-time status change verification
+- **System Integration Tests**: End-to-end workflow testing
 
-2. **Login to Heroku**
-   ```bash
-   heroku login
-   ```
+### Running Specific Test Categories
 
-3. **Create Heroku app**
-   ```bash
-   heroku create your-app-name
-   ```
+```bash
+# Run with verbose output
+npm test -- --verbose
 
-4. **Deploy**
-   ```bash
-   git add .
-   git commit -m "Initial deployment"
-   git push heroku main
-   ```
+# Run specific test file
+npm test tests/api.test.js
 
-5. **Open your app**
-   ```bash
-   heroku open
-   ```
+# Run tests matching pattern
+npm test -- --testNamePattern="Priority"
+```
+
+## 🚀 Deployment
+
+### Render.com (Recommended)
+
+1. **Connect GitHub repository** to Render.com
+2. **Configure build settings**:
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+3. **Deploy** and get public URL
 
 ### Environment Variables
 
-The service uses the following environment variables:
+- `PORT`: Server port (default: 3000)
+- `NODE_ENV`: Environment mode (development/production)
 
-- `PORT` - Server port (default: 3000)
-- `NODE_ENV` - Environment (development/production)
+## 📊 Performance Characteristics
 
-Set environment variables on Heroku:
-```bash
-heroku config:set NODE_ENV=production
-```
+- **Throughput**: 3 IDs per 5 seconds (rate limited)
+- **Batch Size**: Maximum 3 IDs per batch
+- **Memory Usage**: In-memory storage with efficient data structures
+- **Response Time**: Sub-100ms for API endpoints
+- **Concurrency**: Asynchronous processing with single-threaded rate limiting
 
-## Technical Details
+## 🔍 Monitoring and Debugging
 
-### Architecture
-- **Framework**: Express.js
-- **Storage**: In-memory (for simplicity)
-- **Testing**: Jest with Supertest
-- **Security**: Helmet.js for security headers
-- **CORS**: Enabled for cross-origin requests
+### System Status Endpoint
+**GET /status** provides system overview:
+- Current queue size
+- Active batch count
+- Rate limiting information
 
-### Data Storage
-- Data is stored in memory for this assessment
-- Automatic cleanup keeps only the last 1000 records
-- Each record includes metadata (ID, timestamp, size)
+### Logging
+The system provides detailed console logging:
+- 📥 Ingestion requests
+- 🔄 Batch processing
+- ✅ Completion status
+- ❌ Error conditions
 
-### Performance Considerations
-- Request size limit: 10MB
-- Pagination for data retrieval
-- Memory management for large datasets
-
-## Development
+## 🛠️ Development
 
 ### Project Structure
 ```
 ├── src/
-│   ├── app.js              # Main application
+│   ├── app.js                 # Main application
+│   ├── services/
+│   │   └── batchProcessor.js  # Core processing logic
 │   ├── routes/
-│   │   └── api.js          # API routes
+│   │   ├── ingestion.js       # Ingestion endpoints
+│   │   └── status.js          # Status endpoints
 │   └── middleware/
-│       └── errorHandler.js # Error handling
+│       └── errorHandler.js    # Error handling
 ├── tests/
-│   └── api.test.js         # Test suite
-├── package.json            # Dependencies and scripts
-├── Procfile               # Heroku deployment
-└── README.md              # This file
+│   └── api.test.js           # Comprehensive test suite
+├── package.json              # Dependencies and scripts
+├── Procfile                  # Deployment configuration
+└── README.md                 # This documentation
 ```
 
-### Adding Features
-1. Add new routes in `src/routes/api.js`
-2. Add corresponding tests in `tests/api.test.js`
-3. Update this README with new endpoint documentation
+### Key Design Decisions
 
-## License
+1. **In-Memory Storage**: Chosen for simplicity and fast access
+2. **Priority Queue**: Custom implementation for precise control
+3. **Rate Limiting**: Timer-based approach for accurate intervals
+4. **UUID Generation**: For unique, collision-free identifiers
+5. **Comprehensive Testing**: Timing-based tests for rate limiting verification
+
+## 📝 API Examples
+
+### Basic Ingestion
+```bash
+curl -X POST http://localhost:3000/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [1, 2, 3, 4, 5], "priority": "HIGH"}'
+```
+
+### Status Check
+```bash
+curl http://localhost:3000/status/abc123-def456-ghi789
+```
+
+### System Health
+```bash
+curl http://localhost:3000/
+```
+
+## 🔒 Security Features
+
+- **Input Validation**: Comprehensive validation of all inputs
+- **Rate Limiting**: Built-in protection against abuse
+- **Error Handling**: Secure error messages without information leakage
+- **CORS**: Configurable cross-origin resource sharing
+- **Helmet.js**: Security headers for production deployment
+
+## 📈 Scalability Considerations
+
+For production scaling:
+- Replace in-memory storage with Redis/Database
+- Implement distributed job queues (Bull, Agenda)
+- Add horizontal scaling with load balancers
+- Implement persistent storage for job recovery
+- Add monitoring and alerting systems
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Add comprehensive tests
+4. Ensure all tests pass
+5. Submit a pull request
+
+## 📄 License
 
 ISC
